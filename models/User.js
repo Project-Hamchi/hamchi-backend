@@ -35,4 +35,8 @@ const userSchema = new mongoose.Schema({
   }],
 });
 
+userSchema.statics.checkUserExists = function (email) {
+  return this.exists({ email });
+};
+
 module.exports = mongoose.model('User', userSchema);

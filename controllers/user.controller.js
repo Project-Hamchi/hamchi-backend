@@ -29,16 +29,20 @@ exports.signin = async function (req, res, next) {
 
 exports.signup = async function (req, res, next) {
   try {
+    const isUserExists = await User.checkUserExists(req.body.email);
+
+    if (isUserExists) {
+      return next(createError(409, 'user already exists'));
+    }
+
     const { email, username, password, confirmPassword } = req.body;
     const hashedPassword = await argon2.hash(password);
 
-    const result = await User.create({
+    await User.create({
       email,
       username,
       password: hashedPassword,
     });
-
-    console.log(result);
 
     res.json({
       code: 200,
