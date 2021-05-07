@@ -19,7 +19,7 @@ exports.signin = async function (req, res, next) {
       return next(createError(403, 'wrong password'));
     }
 
-    const appIdToken = jwt.sign(currentUser._id, secretKey);
+    const appIdToken = jwt.sign(JSON.stringify(currentUser._id), secretKey);
 
     return res.json({ currentUser, appIdToken });
   } catch (err) {
