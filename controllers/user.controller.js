@@ -19,10 +19,36 @@ exports.signin = async function (req, res, next) {
       return next(createError(403, 'wrong password'));
     }
 
-    const appIdToken = jwt.sign(currentUser._id, secretKey);
+    const appIdToken = jwt.sign(JSON.stringify(currentUser._id), secretKey);
 
     return res.json({ currentUser, appIdToken });
   } catch (err) {
     next(createError(500, err));
   }
-}
+};
+
+exports.signup = async function (req, res, next) {
+  try {
+    const isUserExists = await User.checkUserExists(req.body.email);
+
+    if (isUserExists) {
+      return next(createError(409, 'user already exists'));
+    }
+
+    const { email, username, password, confirmPassword } = req.body;
+    const hashedPassword = await argon2.hash(password);
+
+    await User.create({
+      email,
+      username,
+      password: hashedPassword,
+    });
+
+    res.json({
+      code: 200,
+      message: 'signup success',
+    });
+  } catch (err) {
+    next(createError(500, err));
+  }
+};
