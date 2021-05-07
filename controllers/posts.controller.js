@@ -21,3 +21,15 @@ exports.getPosts = async function (req, res, next) {
     next(createError(500, err));
   }
 };
+
+exports.createPost = async function (req, res, next) {
+  const {
+    image,
+    name,
+    age,
+    location,
+    type,
+    number,
+    details
+  } = req.body;
+}
