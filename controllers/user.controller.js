@@ -25,5 +25,4 @@ exports.signin = async function (req, res, next) {
   } catch (err) {
     next(createError(500, err));
   }
-
 }
