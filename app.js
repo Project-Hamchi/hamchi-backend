@@ -1,16 +1,18 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var logger = require('morgan');
+require('dotenv').config();
+require('./loaders/mongoose');
 
-var indexRouter = require('./routes/index');
+const createError = require('http-errors');
+const express = require('express');
+const logger = require('morgan');
+const parser = require('cookie-parser');
 
-var app = express();
+const indexRouter = require('./routes/index');
 
-app.use(logger('dev'));
+const app = express();
+
+app.use(parser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 
@@ -19,11 +21,11 @@ app.use(function (req, res, next) {
 });
 
 app.use(function (err, req, res, next) {
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
   res.status(err.status || 500);
-  res.render('error');
+  res.json({
+    code: err.status,
+    message: err.message ? err.message : 'Internal server error',
+  });
 });
 
 module.exports = app;

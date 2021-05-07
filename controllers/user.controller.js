@@ -8,7 +8,7 @@ const User = require('../models/User');
 exports.signin = async function (req, res, next) {
   try {
     const { email, password } = req.body;
-    const currentUser = User.findOne({ email }).lean();
+    const currentUser = await User.findOne({ email }).lean();
 
     if (!currentUser) {
       return next(createError(400, 'user not exist'));
