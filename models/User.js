@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Submission',
   }],
-  chattings: [{
+  chats: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Chat',
   }],
