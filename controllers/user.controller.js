@@ -25,4 +25,26 @@ exports.signin = async function (req, res, next) {
   } catch (err) {
     next(createError(500, err));
   }
-}
+};
+
+exports.signup = async function (req, res, next) {
+  try {
+    const { email, username, password, confirmPassword } = req.body;
+    const hashedPassword = await argon2.hash(password);
+
+    const result = await User.create({
+      email,
+      username,
+      password: hashedPassword,
+    });
+
+    console.log(result);
+
+    res.json({
+      code: 200,
+      message: 'signup success',
+    });
+  } catch (err) {
+    next(createError(500, err));
+  }
+};
