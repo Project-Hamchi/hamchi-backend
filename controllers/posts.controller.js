@@ -1,5 +1,6 @@
 const createError = require('http-errors');
 const s3 = require('../loaders/s3');
+const User = require('../models/User');
 const Post = require('../models/Post');
 
 exports.getPosts = async function (req, res, next) {
@@ -26,6 +27,7 @@ exports.getPosts = async function (req, res, next) {
 exports.createPost = async function (req, res, next) {
   try {
     const {
+      userId,
       image,
       name,
       age,
@@ -35,22 +37,34 @@ exports.createPost = async function (req, res, next) {
       details
     } = req.body;
 
+    const buffer = Buffer.from(req.body.base64.base64, "base64");
+
     const params = {
       Bucket: 'hamchi-images',
-      Key: Date.now() + '_' + image.originalname.split('.').pop(),
-      Body: image,
-      ACL: 'public-read'
+      Key: Date.now() + new Date().toISOString(),
+      Body: buffer,
+      ACL: 'public-read',
+      ContentEncoding: "base64",
+      ContentType: "image/jpg",
     };
-    const imageUrl = await s3.upload(params);
+
+    const imageUrl = await s3.upload(params).promise();
     const createdPost = await Post.create({
+      owner: userId,
+      image: imageUrl.Location,
       name,
       age,
-      image: imageUrl,
       location,
       type,
       number,
-      details
+      details,
+      status: 'opened'
     });
+
+    await User.updateOne(
+      { _id: userId },
+      { $push: { posts: createdPost._id } }
+    );
 
     res.json({
       code: 200,
@@ -60,6 +74,7 @@ exports.createPost = async function (req, res, next) {
       },
     });
   } catch (err) {
+    console.log(err);
     next(createError(500, err));
   }
 }

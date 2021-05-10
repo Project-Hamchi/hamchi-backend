@@ -21,7 +21,11 @@ exports.signin = async function (req, res, next) {
 
     const appIdToken = jwt.sign(JSON.stringify(currentUser._id), secretKey);
 
-    return res.json({ currentUser, appIdToken });
+    return res.json({
+      code: 200,
+      message: 'signin success',
+      data: { currentUser, appIdToken }
+    });
   } catch (err) {
     next(createError(500, err));
   }
