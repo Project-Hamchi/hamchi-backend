@@ -21,6 +21,9 @@ const postSchema = new mongoose.Schema({
     enum: ['Syrian', 'Jungle', 'Robo'],
     required: true,
   },
+  age: {
+    type: Number,
+  },
   number: {
     type: Number,
     required: true,
@@ -38,6 +41,10 @@ const postSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
+    required: true,
+  },
+  ownerName: {
+    type: String,
     required: true,
   },
   submissions: {
