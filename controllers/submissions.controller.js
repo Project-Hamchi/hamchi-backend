@@ -4,6 +4,23 @@ const User = require('../models/User');
 const Submissions = require('../models/Submission');
 const Post = require('../models/Post');
 
+exports.mySubmissions = async function (req, res, next) {
+  try {
+    const { userId } = req.params;
+
+    const user = await User
+      .findById(userId)
+      .populate('submissions');
+
+    res.json({
+      code: 200,
+      message: 'my submission fetch success',
+      data: { submissions: user.submissions },
+    });
+  } catch (err) {
+    next(createError(500, err));
+  }
+}
 
 exports.createSubmission = async function (req, res, next) {
   try {
@@ -60,7 +77,6 @@ exports.createSubmission = async function (req, res, next) {
       },
     });
   } catch (err) {
-    console.log(err);
     next(createError(500, err));
   }
 }
