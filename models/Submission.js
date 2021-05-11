@@ -29,6 +29,14 @@ const submissionSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
+  ownerName: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    required: true,
+  }
 });
 
 module.exports = mongoose.model('Submission', submissionSchema);
