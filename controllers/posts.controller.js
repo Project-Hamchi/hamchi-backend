@@ -24,6 +24,24 @@ exports.getPosts = async function (req, res, next) {
   }
 };
 
+exports.myPosts = async function (req, res, next) {
+  try {
+    const { userId } = req.params;
+
+    const user = await User
+      .findById(userId)
+      .populate('posts');
+
+    res.json({
+      code: 200,
+      message: 'my posts fetch success',
+      data: { posts: user.posts },
+    });
+  } catch (err) {
+    next(createError(500, err));
+  }
+}
+
 exports.createPost = async function (req, res, next) {
   try {
     const {
