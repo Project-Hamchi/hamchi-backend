@@ -18,7 +18,16 @@ const postSchema = new mongoose.Schema({
   type: {
     type: String,
     trim: true,
-    enum: ['Syrian', 'Jungle', 'Robo'],
+    enum: ['Syrian', 'Jungle', 'Robo', 'other'],
+    required: true,
+  },
+  age: {
+    type: Number,
+  },
+  gender: {
+    type: String,
+    trim: true,
+    enum: ['남', '여', '미확인'],
     required: true,
   },
   number: {
@@ -38,6 +47,10 @@ const postSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
+    required: true,
+  },
+  ownerName: {
+    type: String,
     required: true,
   },
   submissions: {

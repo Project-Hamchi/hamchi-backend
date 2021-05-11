@@ -4,7 +4,7 @@ const User = require('../models/User');
 const Post = require('../models/Post');
 
 exports.getPosts = async function (req, res, next) {
-  const { page = 1, limit = 20 } = req.body;
+  const { page = 1, limit = 6 } = req.body;
 
   try {
     const posts = await Post.find()
@@ -28,9 +28,11 @@ exports.createPost = async function (req, res, next) {
   try {
     const {
       userId,
+      username,
       image,
       name,
       age,
+      gender,
       location,
       type,
       number,
@@ -51,9 +53,11 @@ exports.createPost = async function (req, res, next) {
     const imageUrl = await s3.upload(params).promise();
     const createdPost = await Post.create({
       owner: userId,
+      ownerName: username,
       image: imageUrl.Location,
       name,
       age,
+      gender,
       location,
       type,
       number,

@@ -14,7 +14,7 @@ exports.signin = async function (req, res, next) {
       return next(createError(400, 'user not exist'));
     }
 
-    const isCorrectPassword = argon2.verify(currentUser.password, password);
+    const isCorrectPassword = await argon2.verify(currentUser.password, password);
     if (!isCorrectPassword) {
       return next(createError(403, 'wrong password'));
     }
