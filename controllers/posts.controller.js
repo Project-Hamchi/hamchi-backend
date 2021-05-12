@@ -40,14 +40,20 @@ exports.getPosts = async function (req, res, next) {
   }
 };
 
-
 exports.myPosts = async function (req, res, next) {
   try {
     const { userId } = req.params;
 
     const user = await User
       .findById(userId)
-      .populate('posts');
+      .populate({
+        path: 'posts',
+        model: 'Post',
+        populate: {
+          path: 'submissions',
+          model: 'Submission'
+        }
+      });
 
     res.json({
       code: 200,
@@ -57,7 +63,7 @@ exports.myPosts = async function (req, res, next) {
   } catch (err) {
     next(createError(500, err));
   }
-}
+};
 
 exports.createPost = async function (req, res, next) {
   try {

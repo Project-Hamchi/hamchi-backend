@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const submissionSchema = new mongoose.Schema({
   experience: {
     type: String,
-    enum: ['없음', '1번', '2번 이상'],
+    enum: ['none', 'one', 'many'],
     required: true,
   },
   environment: {
