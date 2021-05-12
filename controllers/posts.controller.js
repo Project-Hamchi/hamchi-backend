@@ -4,13 +4,29 @@ const User = require('../models/User');
 const Post = require('../models/Post');
 
 exports.getPosts = async function (req, res, next) {
-  const { page = 1, limit = 6 } = req.body;
-
   try {
-    const posts = await Post.find()
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
-      .exec();
+    const { page = 1, limit = 6 } = req.body;
+    const { type } = req.query;
+    let posts;
+
+    if (!type) {
+      posts = await Post.find()
+        .limit(limit * 1)
+        .skip((page - 1) * limit)
+        .exec();
+    } else if (Array.isArray(type)) {
+      posts = await Post.aggregate([
+        { $match: { type: { $in: type } } },
+        { $skip: (page - 1) * limit },
+        { $limit: limit * 1 }
+      ]);
+    } else {
+      posts = await Post.aggregate([
+        { $match: { type: type } },
+        { $skip: (page - 1) * limit },
+        { $limit: limit * 1 }
+      ]);
+    }
 
     const count = await Post.countDocuments();
 
@@ -23,6 +39,7 @@ exports.getPosts = async function (req, res, next) {
     next(createError(500, err));
   }
 };
+
 
 exports.myPosts = async function (req, res, next) {
   try {
@@ -58,7 +75,6 @@ exports.createPost = async function (req, res, next) {
     } = req.body;
 
     const buffer = Buffer.from(photo.base64, "base64");
-
     const params = {
       Bucket: 'hamchi-images',
       Key: Date.now() + new Date().toISOString(),
@@ -67,7 +83,6 @@ exports.createPost = async function (req, res, next) {
       ContentEncoding: "base64",
       ContentType: "image/jpg",
     };
-
     const imageUrl = await s3.upload(params).promise();
     const createdPost = await Post.create({
       owner: userId,
