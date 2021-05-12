@@ -1,60 +1,37 @@
 const createError = require('http-errors');
 const s3 = require('../loaders/s3');
 const User = require('../models/User');
+const Submissions = require('../models/Submission');
 const Post = require('../models/Post');
 
-exports.getPosts = async function (req, res, next) {
-  const { page = 1, limit = 6 } = req.body;
-
-  try {
-    const posts = await Post.find()
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
-      .exec();
-
-    const count = await Post.countDocuments();
-
-    res.json({
-      posts,
-      totalPages: Math.ceil(count / limit),
-      currentPage: page,
-    });
-  } catch (err) {
-    next(createError(500, err));
-  }
-};
-
-exports.myPosts = async function (req, res, next) {
+exports.mySubmissions = async function (req, res, next) {
   try {
     const { userId } = req.params;
 
     const user = await User
       .findById(userId)
-      .populate('posts');
+      .populate('submissions');
 
     res.json({
       code: 200,
-      message: 'my posts fetch success',
-      data: { posts: user.posts },
+      message: 'my submission fetch success',
+      data: { submissions: user.submissions },
     });
   } catch (err) {
     next(createError(500, err));
   }
 }
 
-exports.createPost = async function (req, res, next) {
+exports.createSubmission = async function (req, res, next) {
   try {
     const {
       userId,
       username,
       photo,
-      name,
-      age,
-      gender,
+      experience,
       location,
-      type,
-      number,
-      details
+      details,
+      postId
     } = req.body;
 
     const buffer = Buffer.from(photo.base64, "base64");
@@ -69,34 +46,37 @@ exports.createPost = async function (req, res, next) {
     };
 
     const imageUrl = await s3.upload(params).promise();
-    const createdPost = await Post.create({
+    const createdAt = Date.now();
+
+    const createdSubmission = await Submissions.create({
       owner: userId,
       ownerName: username,
-      image: imageUrl.Location,
-      name,
-      age,
-      gender,
+      environment: imageUrl.Location,
+      experience,
       location,
-      type,
-      number,
       details,
-      status: 'opened'
+      createdAt,
+      matched: 'false',
     });
 
     await User.updateOne(
       { _id: userId },
-      { $push: { posts: createdPost._id } }
+      { $push: { submissions: createdSubmission._id } }
+    );
+
+    await Post.updateOne(
+      { _id: postId },
+      { $push: { submissions: createdSubmission._id } }
     );
 
     res.json({
       code: 200,
-      message: 'create post success',
+      message: 'create submission success',
       data: {
-        post: createdPost
+        submission: createdSubmission
       },
     });
   } catch (err) {
-    console.log(err);
     next(createError(500, err));
   }
 }
