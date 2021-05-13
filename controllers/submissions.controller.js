@@ -79,4 +79,22 @@ exports.createSubmission = async function (req, res, next) {
   } catch (err) {
     next(createError(500, err));
   }
-}
+};
+
+exports.updateSubmissionStatus = async function (req, res, next) {
+  try {
+    const { submissionIds } = req.body;
+    console.log(submissionIds);
+    const result = await Submissions.updateMany(
+      { _id: { $in: submissionIds } },
+      { $set: { matched: 'true' } }
+    );
+
+    res.json({
+      code: 200,
+      message: 'update submission success',
+    });
+  } catch (err) {
+    next(createError(500, err));
+  }
+};

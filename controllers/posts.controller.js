@@ -6,7 +6,7 @@ const Post = require('../models/Post');
 exports.getPosts = async function (req, res, next) {
   try {
     const { page = 1, limit = 6 } = req.body;
-    const { type } = req.query;
+    let { type } = req.query;
     let posts;
 
     if (!type) {
@@ -14,20 +14,15 @@ exports.getPosts = async function (req, res, next) {
         .limit(limit * 1)
         .skip((page - 1) * limit)
         .exec();
-    } else if (Array.isArray(type)) {
-      posts = await Post.aggregate([
-        { $match: { type: { $in: type } } },
-        { $skip: (page - 1) * limit },
-        { $limit: limit * 1 }
-      ]);
     } else {
+      const types = Array.isArray(type) ? type : [type];
+
       posts = await Post.aggregate([
-        { $match: { type: type } },
+        { $match: { type: { $in: types } } },
         { $skip: (page - 1) * limit },
         { $limit: limit * 1 }
       ]);
     }
-
     const count = await Post.countDocuments();
 
     res.json({
