@@ -4,14 +4,25 @@ const User = require('../models/User');
 const Post = require('../models/Post');
 
 exports.getPosts = async function (req, res, next) {
-  const { page = 1, limit = 6 } = req.body;
-
   try {
-    const posts = await Post.find()
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
-      .exec();
+    const { page = 1, limit = 6 } = req.body;
+    let { type } = req.query;
+    let posts;
 
+    if (!type) {
+      posts = await Post.find()
+        .limit(limit * 1)
+        .skip((page - 1) * limit)
+        .exec();
+    } else {
+      const types = Array.isArray(type) ? type : [type];
+
+      posts = await Post.aggregate([
+        { $match: { type: { $in: types } } },
+        { $skip: (page - 1) * limit },
+        { $limit: limit * 1 }
+      ]);
+    }
     const count = await Post.countDocuments();
 
     res.json({
@@ -30,7 +41,14 @@ exports.myPosts = async function (req, res, next) {
 
     const user = await User
       .findById(userId)
-      .populate('posts');
+      .populate({
+        path: 'posts',
+        model: 'Post',
+        populate: {
+          path: 'submissions',
+          model: 'Submission'
+        }
+      });
 
     res.json({
       code: 200,
@@ -40,7 +58,7 @@ exports.myPosts = async function (req, res, next) {
   } catch (err) {
     next(createError(500, err));
   }
-}
+};
 
 exports.createPost = async function (req, res, next) {
   try {
@@ -58,7 +76,6 @@ exports.createPost = async function (req, res, next) {
     } = req.body;
 
     const buffer = Buffer.from(photo.base64, "base64");
-
     const params = {
       Bucket: 'hamchi-images',
       Key: Date.now() + new Date().toISOString(),
@@ -67,7 +84,6 @@ exports.createPost = async function (req, res, next) {
       ContentEncoding: "base64",
       ContentType: "image/jpg",
     };
-
     const imageUrl = await s3.upload(params).promise();
     const createdPost = await Post.create({
       owner: userId,
