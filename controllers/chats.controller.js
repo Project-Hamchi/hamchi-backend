@@ -1,6 +1,7 @@
 const createError = require('http-errors');
 const User = require('../models/User');
 const Chat = require('../models/Chat');
+const Message = require('../models/Message');
 
 exports.createChats = async function (req, res, next) {
   try {
@@ -8,6 +9,17 @@ exports.createChats = async function (req, res, next) {
 
     const owner = await User.findById(ownerId);
     const guest = await User.findById(guestId);
+
+    const messages = await Message.create({
+      messages: [{
+        user: {
+          id: ownerId,
+          name: owner.username
+        },
+        message: message,
+        time: new Date
+      }]
+    });
 
     const chat = await Chat.create({
       owner: {
@@ -18,16 +30,15 @@ exports.createChats = async function (req, res, next) {
         id: guestId,
         name: guest.username
       },
-      messages: [
-        {
-          user: {
-            id: ownerId,
-            name: owner.username
-          },
-          message: message,
-          time: new Date
-        }
-      ]
+      lastMessage: {
+        user: {
+          id: ownerId,
+          name: owner.username
+        },
+        message: message,
+        time: new Date
+      },
+      messages: messages._id
     });
 
     await User.updateMany(
@@ -44,3 +55,21 @@ exports.createChats = async function (req, res, next) {
     next(createError(500, err));
   }
 };
+
+exports.myChats = async function (req, res, next) {
+  try {
+    const { userId } = req.params;
+
+    const user = await User
+      .findById(userId)
+      .populate('chats');
+
+    res.json({
+      code: 200,
+      message: 'my chats fetch success',
+      data: { chats: user.chats },
+    });
+  } catch (err) {
+    next(createError(500, err));
+  }
+}
