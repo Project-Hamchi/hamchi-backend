@@ -72,4 +72,22 @@ exports.myChats = async function (req, res, next) {
   } catch (err) {
     next(createError(500, err));
   }
-}
+};
+
+exports.getMessages = async function (req, res, next) {
+  try {
+    const { messageId } = req.params;
+
+    const messages = await Message.findById(messageId);
+
+    res.json({
+      code: 200,
+      message: 'my chats fetch success',
+      data: { messages: messages },
+    });
+  } catch (err) {
+    next(createError(500, err));
+  }
+};
+
+
