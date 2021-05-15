@@ -3,7 +3,8 @@ const {
   isChatRoomExists,
   createChatRoom,
   getChatRoom,
-  addMessage
+  addMessage,
+  saveChat
 } = require('./roomManager');
 
 io.on('connection', (socket) => {
@@ -33,6 +34,10 @@ io.on('connection', (socket) => {
       message,
       time: new Date()
     });
+  });
+
+  socket.on('leaveChatRoom', async (roomId) => {
+    await saveChat(roomId);
   });
 });
 

@@ -84,7 +84,6 @@ exports.createSubmission = async function (req, res, next) {
 exports.updateSubmissionStatus = async function (req, res, next) {
   try {
     const { submissionIds } = req.body;
-    console.log(submissionIds);
     const result = await Submissions.updateMany(
       { _id: { $in: submissionIds } },
       { $set: { matched: 'true' } }
