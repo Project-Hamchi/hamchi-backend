@@ -36,6 +36,11 @@ const submissionSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     required: true,
+  },
+  postId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Post',
+    required: true,
   }
 });
 
