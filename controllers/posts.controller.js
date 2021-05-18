@@ -43,6 +43,7 @@ exports.myPosts = async function (req, res, next) {
 
     const user = await User
       .findById(userId)
+      .sort([['_id', -1]])
       .populate({
         path: 'posts',
         model: 'Post',

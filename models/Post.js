@@ -27,7 +27,7 @@ const postSchema = new mongoose.Schema({
   gender: {
     type: String,
     trim: true,
-    enum: ['남', '여', '미확인'],
+    enum: ['male', 'female', 'other'],
     required: true,
   },
   number: {
