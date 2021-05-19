@@ -10,7 +10,7 @@ exports.getPosts = async function (req, res, next) {
     let posts;
 
     if (!type) {
-      posts = await Post.find()
+      posts = await Post.find({ status: 'opened' })
         .sort([['_id', -1]])
         .limit(limit * 1)
         .skip((page - 1) * limit)
@@ -20,6 +20,7 @@ exports.getPosts = async function (req, res, next) {
 
       posts = await Post.aggregate([
         { $match: { type: { $in: types } } },
+        { $match: { status: 'opened' } },
         { $sort: { _id: -1 } },
         { $skip: (page - 1) * limit },
         { $limit: limit * 1 }
