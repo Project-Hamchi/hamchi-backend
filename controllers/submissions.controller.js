@@ -10,7 +10,15 @@ exports.mySubmissions = async function (req, res, next) {
 
     const user = await User
       .findById(userId)
-      .populate('submissions');
+      .populate({
+        path: 'submissions',
+        model: 'Submission',
+        populate: {
+          path: 'postId',
+          model: 'Post',
+          select: ['name', 'image', 'status']
+        }
+      });
 
     res.json({
       code: 200,
@@ -33,7 +41,6 @@ exports.createSubmission = async function (req, res, next) {
       details,
       postId
     } = req.body;
-
     const buffer = Buffer.from(photo.base64, "base64");
 
     const params = {
@@ -56,6 +63,7 @@ exports.createSubmission = async function (req, res, next) {
       location,
       details,
       createdAt,
+      postId,
       matched: 'false',
     });
 

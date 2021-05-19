@@ -27,7 +27,7 @@ const postSchema = new mongoose.Schema({
   gender: {
     type: String,
     trim: true,
-    enum: ['남', '여', '미확인'],
+    enum: ['male', 'female', 'other'],
     required: true,
   },
   number: {
@@ -57,6 +57,10 @@ const postSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Submission',
   }],
+  createdAt: {
+    type: Date,
+    required: true,
+  },
 });
 
 module.exports = mongoose.model('Post', postSchema);

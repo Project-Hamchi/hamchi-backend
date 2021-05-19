@@ -36,8 +36,11 @@ io.on('connection', (socket) => {
     });
   });
 
-  socket.on('leaveChatRoom', async (roomId) => {
-    await saveChat(roomId);
+  socket.on('leaveChatRoom', async (args, cb) => {
+    const { chatId, roomId } = args;
+    await saveChat(chatId, roomId);
+
+    cb();
   });
 });
 

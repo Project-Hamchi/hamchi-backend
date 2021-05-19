@@ -10,7 +10,8 @@ exports.getPosts = async function (req, res, next) {
     let posts;
 
     if (!type) {
-      posts = await Post.find()
+      posts = await Post.find({ status: 'opened' })
+        .sort([['_id', -1]])
         .limit(limit * 1)
         .skip((page - 1) * limit)
         .exec();
@@ -19,16 +20,18 @@ exports.getPosts = async function (req, res, next) {
 
       posts = await Post.aggregate([
         { $match: { type: { $in: types } } },
+        { $match: { status: 'opened' } },
+        { $sort: { _id: -1 } },
         { $skip: (page - 1) * limit },
         { $limit: limit * 1 }
       ]);
     }
-    const count = await Post.countDocuments();
 
     res.json({
-      posts,
-      totalPages: Math.ceil(count / limit),
-      currentPage: page,
+      data: {
+        posts,
+        page
+      }
     });
   } catch (err) {
     next(createError(500, err));
@@ -41,6 +44,7 @@ exports.myPosts = async function (req, res, next) {
 
     const user = await User
       .findById(userId)
+      .sort([['_id', -1]])
       .populate({
         path: 'posts',
         model: 'Post',
@@ -85,6 +89,8 @@ exports.createPost = async function (req, res, next) {
       ContentType: "image/jpg",
     };
     const imageUrl = await s3.upload(params).promise();
+    const createdAt = Date.now();
+
     const createdPost = await Post.create({
       owner: userId,
       ownerName: username,
@@ -96,6 +102,7 @@ exports.createPost = async function (req, res, next) {
       type,
       number,
       details,
+      createdAt,
       status: 'opened'
     });
 
@@ -112,7 +119,24 @@ exports.createPost = async function (req, res, next) {
       },
     });
   } catch (err) {
-    console.log(err);
     next(createError(500, err));
   }
 }
+
+exports.closePost = async function (req, res, next) {
+  try {
+    const { postId } = req.params;
+
+    await Post.findByIdAndUpdate(
+      postId,
+      { $set: { status: 'closed' } }
+    );
+
+    res.json({
+      code: 200,
+      message: 'close post success',
+    });
+  } catch (err) {
+    next(createError(500, err));
+  }
+};

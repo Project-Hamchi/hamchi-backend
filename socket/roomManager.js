@@ -1,4 +1,6 @@
 const Message = require('../models/Message');
+const Chat = require('../models/Chat');
+
 const chatRooms = {};
 const users = {};
 
@@ -32,13 +34,20 @@ const addMessage = (args) => {
   });
 };
 
-const saveChat = async (roomId) => {
+const saveChat = async (chatId, roomId) => {
   const chatRoom = chatRooms[roomId];
+  const messages = chatRooms[roomId].messages;
+  const lastMessage = messages[messages.length - 1];
 
   users[roomId]--;
   await Message.findOneAndUpdate(
     { _id: roomId },
     { $set: { messages: chatRoom.messages } }
+  );
+
+  await Chat.findOneAndUpdate(
+    { _id: chatId },
+    { $set: { lastMessage: lastMessage } }
   );
 
   if (!users[roomId]) {
