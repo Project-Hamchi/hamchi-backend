@@ -1,4 +1,6 @@
 const createError = require('http-errors');
+const { submissionErrorMessage } = require('../constants/errorMessage');
+
 const s3 = require('../loaders/s3');
 const User = require('../models/User');
 const Submissions = require('../models/Submission');
@@ -26,7 +28,7 @@ exports.mySubmissions = async function (req, res, next) {
       data: { submissions: user.submissions },
     });
   } catch (err) {
-    next(createError(500, err));
+    next(createError(500));
   }
 }
 
@@ -41,8 +43,18 @@ exports.createSubmission = async function (req, res, next) {
       details,
       postId
     } = req.body;
-    const buffer = Buffer.from(photo.base64, "base64");
 
+    const user = await User.findById(userId)
+      .populate({
+        path: 'submissions',
+        match: { postId: postId }
+      });
+
+    if (user.submissions.length) {
+      return next(createError(500, submissionErrorMessage.SUBMISSION_ALREADY_EXIST));
+    }
+
+    const buffer = Buffer.from(photo.base64, "base64");
     const params = {
       Bucket: 'hamchi-images',
       Key: Date.now() + new Date().toISOString(),
@@ -85,14 +97,14 @@ exports.createSubmission = async function (req, res, next) {
       },
     });
   } catch (err) {
-    next(createError(500, err));
+    next(createError(500, submissionErrorMessage.SUBMISSION_CREATE_FAILED));
   }
 };
 
 exports.updateSubmissionStatus = async function (req, res, next) {
   try {
     const { submissionIds } = req.body;
-    const result = await Submissions.updateMany(
+    await Submissions.updateMany(
       { _id: { $in: submissionIds } },
       { $set: { matched: 'true' } }
     );

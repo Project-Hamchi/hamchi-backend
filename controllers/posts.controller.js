@@ -1,4 +1,6 @@
 const createError = require('http-errors');
+const { postErrorMessage } = require('../constants/errorMessage');
+
 const s3 = require('../loaders/s3');
 const User = require('../models/User');
 const Post = require('../models/Post');
@@ -34,7 +36,7 @@ exports.getPosts = async function (req, res, next) {
       }
     });
   } catch (err) {
-    next(createError(500, err));
+    next(createError(500, postErrorMessage.POST_FETCH_FAILED));
   }
 };
 
@@ -60,7 +62,7 @@ exports.myPosts = async function (req, res, next) {
       data: { posts: user.posts },
     });
   } catch (err) {
-    next(createError(500, err));
+    next(createError(500, postErrorMessage.POST_FETCH_FAILED));
   }
 };
 
@@ -119,7 +121,7 @@ exports.createPost = async function (req, res, next) {
       },
     });
   } catch (err) {
-    next(createError(500, err));
+    next(createError(500, postErrorMessage.POST_CREATE_FAILED));
   }
 }
 
@@ -137,6 +139,6 @@ exports.closePost = async function (req, res, next) {
       message: 'close post success',
     });
   } catch (err) {
-    next(createError(500, err));
+    next(createError(500, postErrorMessage.POST_CREATE_FAILED));
   }
 };

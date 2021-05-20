@@ -1,4 +1,6 @@
 const createError = require('http-errors');
+const { chatErrorMessage } = require('../constants/errorMessage');
+
 const User = require('../models/User');
 const Chat = require('../models/Chat');
 const Message = require('../models/Message');
@@ -52,7 +54,7 @@ exports.createChats = async function (req, res, next) {
       message: 'create chat success',
     });
   } catch (err) {
-    next(createError(500, err));
+    next(createError(500, chatErrorMessage.CHAT_CREATE_FAILED));
   }
 };
 
@@ -70,14 +72,13 @@ exports.myChats = async function (req, res, next) {
       data: { chats: user.chats },
     });
   } catch (err) {
-    next(createError(500, err));
+    next(createError(500, chatErrorMessage.CHAT_FETCH_FAILED));
   }
 };
 
 exports.getMessages = async function (req, res, next) {
   try {
     const { messageId } = req.params;
-
     const messages = await Message.findById(messageId);
 
     res.json({
@@ -86,7 +87,7 @@ exports.getMessages = async function (req, res, next) {
       data: { messages: messages },
     });
   } catch (err) {
-    next(createError(500, err));
+    next(createError(500, chatErrorMessage.MESSAGES_FETCH_FAILED));
   }
 };
 
